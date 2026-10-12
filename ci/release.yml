@@ -1,3 +1,6 @@
+# NOTA: para activar el autorelease, mueve este archivo a .github/workflows/release.yml
+# (desde la web de GitHub: Edit → Rename → .github/workflows/release.yml)
+# o con un token PAT que incluya el scope 'workflow'.
 # =============================================================================
 # Release automático: al subir un tag vX.Y.Z crea el release en GitHub
 # y adjunta un .tar.gz con el código del repositorio.

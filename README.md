@@ -92,7 +92,7 @@ susu/
 │   ├── yazi/yazi.toml
 │   └── ssh/config              # ⚠ solo plantilla, nunca claves
 ├── assets/                     # Banner, capturas y vídeos del README
-└── .github/workflows/
+└── ci/                      # renómbralo a .github/workflows/release.yml para activarlo
     └── release.yml             # Publica release + .tar.gz en cada tag
 ```
 
@@ -118,7 +118,7 @@ git tag v0.0.2
 git push origin main --tags
 ```
 
-El workflow [`release.yml`](.github/workflows/release.yml) crea automáticamente el release y adjunta el `.tar.gz`. También puedes hacerlo manual:
+El workflow [`release.yml`](ci/release.yml) crea automáticamente el release y adjunta el `.tar.gz`. También puedes hacerlo manual:
 
 ```bash
 gh release create v0.0.2 -t "susu v0.0.2" --generate-notes
