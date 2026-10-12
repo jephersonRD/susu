@@ -105,7 +105,10 @@ installed_version() {
 # =============================================================================
 #  3. Descarga con barra de progreso REAL (Content-Length)
 # =============================================================================
-fmt_mb() { awk -v b="${1:-0}" 'BEGIN { printf "%.1f", b / 1048576 }'; }
+# Formatea bytes legibles: KB si < 1 MB, MB en caso contrario
+fmt_size() { awk -v b="${1:-0}" 'BEGIN {
+  if (b >= 1048576) printf "%.1f MB", b / 1048576
+  else              printf "%.1f KB", b / 1024 }'; }
 
 remote_size() {   # Content-Length de la URL (última cabecera tras redirects)
   curl -fsIL -m 15 "$1" 2>/dev/null \
@@ -123,9 +126,9 @@ draw_bar() {  # descargados total velocidad(bytes/s)
   for (( i = 0; i < BAR_W; i++ )); do
     (( i < filled )) && bar+="█" || bar+="░"
   done
-  printf '\r  %s[%s]%s %3d%%  %s/%s MB  %s MB/s   ' \
+  printf '\r  %s[%s]%s %3d%%  %s/%s  %s/s   ' \
     "$P" "$bar" "$N" "$pct" \
-    "$(fmt_mb "$size")" "$(fmt_mb "$total")" "$(fmt_mb "$speed")"
+    "$(fmt_size "$size")" "$(fmt_size "$total")" "$(fmt_size "$speed")"
 }
 
 download_with_progress() {  # url destino
@@ -135,7 +138,7 @@ download_with_progress() {  # url destino
   printf '\n  %s⬇ susu%s\n' "$BOLD$P" "$N"
   printf '  Versión actual: %s  →  Nueva: %s\n' "$CUR_DISPLAY" "$TAG_DISPLAY"
   if (( total > 0 )); then
-    printf '  Peso: %s MB\n\n' "$(fmt_mb "$total")"
+    printf '  Peso: %s\n\n' "$(fmt_size "$total")"
   else
     printf '  Peso: %s(desconocido)%s\n\n' "$D" "$N"
   fi
