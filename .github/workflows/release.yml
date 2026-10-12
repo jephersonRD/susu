@@ -33,9 +33,9 @@ jobs:
         run: |
           set -euo pipefail
           TAG="${GITHUB_REF_NAME}"
-          NAME="My-termux-config-${TAG#v}"
+          NAME="susu-${TAG#v}"
           mkdir -p dist
-          # git archive empaqueta el tag con carpeta raíz My-termux-config-X.Y.Z/
+          # git archive empaqueta el tag con carpeta raíz susu-X.Y.Z/
           git archive --format=tar.gz --prefix="${NAME}/" -o "dist/${NAME}.tar.gz" "${TAG}"
           echo "PAQUETE=dist/${NAME}.tar.gz" >> "$GITHUB_ENV"
           ls -lh dist/
@@ -43,6 +43,6 @@ jobs:
       - name: Publicar release
         uses: softprops/action-gh-release@v2
         with:
-          name: My-termux-config ${{ github.ref_name }}
+          name: susu ${{ github.ref_name }}
           files: dist/*.tar.gz
           generate_release_notes: true

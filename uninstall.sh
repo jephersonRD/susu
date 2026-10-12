@@ -1,14 +1,14 @@
 #!/data/data/com.termux/files/usr/bin/bash
 # =============================================================================
-# My-termux-config — desinstalador
+# susu — desinstalador
 # Restaura el backup más reciente creado por install.sh y elimina
 # la configuración instalada que no existiera antes.
 # NO desinstala paquetes (zsh, htop, yazi, fastfetch, openssh).
 # =============================================================================
 set -euo pipefail
 
-BACKUP_ROOT="$HOME/.my-termux-config-backup"
-VERSION_FILE="$HOME/.config/my-termux-config/version"
+BACKUP_ROOT="$HOME/.susu-backup"
+VERSION_FILE="$HOME/.config/susu/version"
 
 P=$'\e[38;5;141m'; G=$'\e[38;5;114m'; Y=$'\e[38;5;220m'; R=$'\e[38;5;203m'
 B=$'\e[38;5;111m'; D=$'\e[2m'; N=$'\e[0m'
@@ -17,7 +17,7 @@ ok()   { printf '  %s✔%s %s\n' "$G" "$N" "$1"; }
 info() { printf '  %s➜%s %s\n' "$B" "$N" "$1"; }
 die()  { printf '  %s✘ %s%s\n' "$R" "$1" "$N" >&2; exit 1; }
 
-printf '\n  %s⬇ My-termux-config%s — desinstalador\n\n' "$P" "$N"
+printf '\n  %s⬇ susu%s — desinstalador\n\n' "$P" "$N"
 
 # ── Solo Termux ──────────────────────────────────────────────────────────────
 [[ -n "${PREFIX:-}" && "$PREFIX" == */com.termux/* ]] \
@@ -56,7 +56,7 @@ done
 
 # ── Limpiar estado del instalador ────────────────────────────────────────────
 rm -f "$VERSION_FILE"
-rmdir --ignore-fail-on-non-empty "$HOME/.config/my-termux-config" 2>/dev/null || true
+rmdir --ignore-fail-on-non-empty "$HOME/.config/susu" 2>/dev/null || true
 
 printf '\n  %s✔ Desinstalación completada.%s' "$G" "$N"
 printf '  %sEl backup se conserva en %s por si acaso.%s' "$D" "$LATEST" "$N"

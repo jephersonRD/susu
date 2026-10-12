@@ -1,13 +1,13 @@
 <div align="center">
 
 <!-- Reemplaza con tu banner: sube assets/banner.png -->
-<img src="assets/banner.png" alt="My-termux-config" width="640"/>
+<img src="assets/banner.png" alt="susu" width="640"/>
 
-# My-termux-config
+# susu
 
 **Mi personalización completa de Termux con un solo comando.**
 
-[![Versión](https://img.shields.io/github/v/release/jephersonRD/My-termux-config?label=versi%C3%B3n&color=blueviolet)](https://github.com/jephersonRD/My-termux-config/releases/latest)
+[![Versión](https://img.shields.io/github/v/release/jephersonRD/susu?label=versi%C3%B3n&color=blueviolet)](https://github.com/jephersonRD/susu/releases/latest)
 [![Licencia](https://img.shields.io/badge/licencia-MIT-green)](LICENSE)
 [![Plataforma](https://img.shields.io/badge/plataforma-Termux%20%7C%20Android-black?logo=android&logoColor=white)](https://termux.dev)
 [![Instalador](https://img.shields.io/badge/instalador-curl%20%7C%20bash-orange)](install.sh)
@@ -43,7 +43,7 @@ Repositorio con **mi setup completo de Termux**: shell zsh con prompt estilo pow
 ## ⚡ Instalación
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/jephersonRD/My-termux-config/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/jephersonRD/susu/main/install.sh | bash
 ```
 
 Al terminar, **cierra y vuelve a abrir Termux**.
@@ -53,7 +53,7 @@ Al terminar, **cierra y vuelve a abrir Termux**.
 Vuelve a ejecutar el mismo comando. El instalador:
 
 1. Consulta la última versión publicada en GitHub.
-2. La compara con la que tienes (`~/.config/my-termux-config/version`).
+2. La compara con la que tienes (`~/.config/susu/version`).
 3. Si ya estás al día te avisa y pregunta si quieres reinstalar; si hay una nueva, descarga y aplica.
 
 ## 📦 Qué se instala
@@ -79,7 +79,7 @@ Y estas configuraciones se copian a tu `$HOME`:
 ## 🗂 Estructura del repositorio
 
 ```
-My-termux-config/
+susu/
 ├── install.sh                  # Instalador de una línea
 ├── uninstall.sh                # Restaura el último backup
 ├── VERSION                     # Versión actual (SemVer)
@@ -99,10 +99,10 @@ My-termux-config/
 ## 🗑 Desinstalación
 
 ```bash
-bash <(curl -fsSL https://raw.githubusercontent.com/jephersonRD/My-termux-config/main/uninstall.sh)
+bash <(curl -fsSL https://raw.githubusercontent.com/jephersonRD/susu/main/uninstall.sh)
 ```
 
-Restaura el backup más reciente de `~/.my-termux-config-backup/` y elimina lo que no existiera antes. **No desinstala paquetes**; si quieres quitarlos: `pkg uninstall zsh htop yazi fastfetch openssh`.
+Restaura el backup más reciente de `~/.susu-backup/` y elimina lo que no existiera antes. **No desinstala paquetes**; si quieres quitarlos: `pkg uninstall zsh htop yazi fastfetch openssh`.
 
 ## 🚢 Publicar una nueva versión (mantenedor)
 
@@ -121,7 +121,7 @@ git push origin main --tags
 El workflow [`release.yml`](.github/workflows/release.yml) crea automáticamente el release y adjunta el `.tar.gz`. También puedes hacerlo manual:
 
 ```bash
-gh release create v0.0.2 -t "My-termux-config v0.0.2" --generate-notes
+gh release create v0.0.2 -t "susu v0.0.2" --generate-notes
 ```
 
 ## 🤝 Contribuciones

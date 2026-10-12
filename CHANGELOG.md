@@ -23,4 +23,4 @@ y este proyecto adhiere a [Semantic Versioning](https://semver.org/lang/es/).
 - Workflow de GitHub Actions para publicar releases con `.tar.gz` al crear tags.
 - Licencia MIT, README profesional y carpeta `assets/` para imágenes y vídeos.
 
-[0.0.1]: https://github.com/jephersonRD/My-termux-config/releases/tag/v0.0.1
+[0.0.1]: https://github.com/jephersonRD/susu/releases/tag/v0.0.1

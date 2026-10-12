@@ -1,25 +1,25 @@
 #!/data/data/com.termux/files/usr/bin/bash
 # =============================================================================
-# My-termux-config — instalador de una línea
+# susu — instalador de una línea
 #
-#   curl -fsSL https://raw.githubusercontent.com/jephersonRD/My-termux-config/main/install.sh | bash
+#   curl -fsSL https://raw.githubusercontent.com/jephersonRD/susu/main/install.sh | bash
 #
 # - Detecta la última versión publicada (API de GitHub, sin jq).
 # - Descarga el .tar.gz con barra de progreso REAL (Content-Length).
 # - Instala paquetes faltantes con pkg (idempotente).
 # - Hace backup de configs previas antes de sobrescribir.
-# - Guarda la versión instalada en ~/.config/my-termux-config/version.
+# - Guarda la versión instalada en ~/.config/susu/version.
 # =============================================================================
 set -euo pipefail
 
 # ── Constantes ───────────────────────────────────────────────────────────────
-REPO="jephersonRD/My-termux-config"
+REPO="jephersonRD/susu"
 API_LATEST="https://api.github.com/repos/${REPO}/releases/latest"
 RAW_MAIN="https://codeload.github.com/${REPO}/tar.gz/refs/heads/main"
 
-STATE_DIR="$HOME/.config/my-termux-config"
+STATE_DIR="$HOME/.config/susu"
 VERSION_FILE="$STATE_DIR/version"
-BACKUP_ROOT="$HOME/.my-termux-config-backup"
+BACKUP_ROOT="$HOME/.susu-backup"
 
 PKGS=(zsh htop yazi fastfetch openssh)
 BAR_W=20
@@ -132,7 +132,7 @@ download_with_progress() {  # url destino
   local url=$1 out=$2 total
   total=$(remote_size "$url"); total=${total:-0}
 
-  printf '\n  %s⬇ My-termux-config%s\n' "$BOLD$P" "$N"
+  printf '\n  %s⬇ susu%s\n' "$BOLD$P" "$N"
   printf '  Versión actual: %s  →  Nueva: %s\n' "$CUR_DISPLAY" "$TAG_DISPLAY"
   if (( total > 0 )); then
     printf '  Peso: %s MB\n\n' "$(fmt_mb "$total")"
@@ -264,9 +264,10 @@ main() {
   printf '%s' "$P"
   cat <<'BANNER'
 
-   ╔╦╗┬ ┬  ╔╦╗┌─┐┬─┐┌┬┐┬ ┬─┐ ┬
-   ║║║└┬┘───║ ├┤ ├┬┘││││ │┌┴┬┘
-   ╩ ╩ ┴   ╩ └─┘┴└─┴ ┴└─┘┴ └─
+        7a7a7.  7a7a7.  7a7a7.  7a7a7.
+       /____/  /____/  /____/  /____/
+
+          s  u  s  u  ·  termux setup
 BANNER
   printf '%s       instalador · %s%s\n\n' "$D" "$REPO" "$N"
 
