@@ -1,0 +1,21 @@
+# =============================================================================
+# ~/.config/yazi/yazi.toml — gestor de archivos TUI
+# (compatible con yazi 25.x/26.x: sección [mgr])
+# =============================================================================
+
+[mgr]
+ratio          = [1, 3, 4]     # columnas: padre / actual / preview
+sort_by        = "natural"     # orden natural: img2 < img10
+sort_dir_first = true          # carpetas primero
+sort_reverse   = false
+sort_sensitive = false
+linemode       = "size"        # tamaño junto a cada archivo
+show_hidden    = false         # pulsa "." dentro de yazi para alternar
+show_symlink   = true
+scrolloff      = 5
+
+[preview]
+tab_size   = 2
+max_width  = 600
+max_height = 900
+image_delay = 30

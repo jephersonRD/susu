@@ -1,0 +1,25 @@
+# =============================================================================
+# ~/.ssh/config — configuración de cliente SSH (SIN claves privadas)
+# Las llaves NUNCA se suben al repo: genera la tuya con:
+#   ssh-keygen -t ed25519 -C "tu@email"
+# =============================================================================
+
+Host *
+    AddKeysToAgent yes
+    ServerAliveInterval 60
+    ServerAliveCountMax 3
+    Compression yes
+
+# ── Ejemplo de host (descomenta y edita) ────────────────────────────────────
+# Host mi-servidor
+#     HostName 192.168.1.100
+#     User tu_usuario
+#     Port 22
+#     IdentityFile ~/.ssh/id_ed25519
+
+# ── Termux como servidor (sshd corre en el puerto 8022) ─────────────────────
+# Host telefono
+#     HostName 192.168.1.X
+#     User u0_a185
+#     Port 8022
+#     IdentityFile ~/.ssh/id_ed25519

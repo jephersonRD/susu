@@ -1,0 +1,48 @@
+# =============================================================================
+# Release automático: al subir un tag vX.Y.Z crea el release en GitHub
+# y adjunta un .tar.gz con el código del repositorio.
+# Uso:  git tag v0.0.2 && git push origin main --tags
+# =============================================================================
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Comprobar que VERSION coincide con el tag
+        run: |
+          TAG_VERSION="${GITHUB_REF_NAME#v}"
+          FILE_VERSION=$(cat VERSION)
+          if [ "$TAG_VERSION" != "$FILE_VERSION" ]; then
+            echo "::error::El tag (${GITHUB_REF_NAME}) no coincide con VERSION (${FILE_VERSION})"
+            exit 1
+          fi
+
+      - name: Empaquetar .tar.gz
+        run: |
+          set -euo pipefail
+          TAG="${GITHUB_REF_NAME}"
+          NAME="My-termux-config-${TAG#v}"
+          mkdir -p dist
+          # git archive empaqueta el tag con carpeta raíz My-termux-config-X.Y.Z/
+          git archive --format=tar.gz --prefix="${NAME}/" -o "dist/${NAME}.tar.gz" "${TAG}"
+          echo "PAQUETE=dist/${NAME}.tar.gz" >> "$GITHUB_ENV"
+          ls -lh dist/
+
+      - name: Publicar release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: My-termux-config ${{ github.ref_name }}
+          files: dist/*.tar.gz
+          generate_release_notes: true
