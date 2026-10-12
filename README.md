@@ -22,22 +22,48 @@ Repositorio con **mi setup completo de Termux**: shell zsh con prompt estilo pow
 
 ## ✨ Características
 
+- 🎛 **Menú interactivo** — 1) Instalar · 2) Actualizar · 3) Borrar · 4) Salir.
+- 🌐 **Selector de idioma** — Español/English, se recuerda y se cambia con `--lang`.
+- 🏷 **Banner 3D «SUSU»** — degradado morado → cian con la versión dinámica.
 - 🚀 **Instalación en 1 comando** — detecta versiones, descarga el último release y configura todo.
-- 📊 **Progreso real de descarga** — barra con porcentaje, MB y velocidad obtenidos del `Content-Length`.
+- 📊 **Progreso real de descarga** — barra con porcentaje, tamaño y velocidad obtenidos del `Content-Length`.
 - 🔁 **Idempotente** — ejecútalo las veces que quieras; solo instala lo que falta.
 - 💾 **Backups automáticos** — tus configs anteriores se guardan antes de sobrescribir.
-- 🗑 **Desinstalador** — restaura tu sistema al estado previo con `uninstall.sh`.
+- 🧹 **Borrado completo** — la opción 3 deja Termux por defecto (configs + paquetes + shell).
 - 🔐 **Sin secretos** — cero claves privadas, tokens o contraseñas en el repo.
+
+## 🕹 Uso
+
+Al ejecutarlo verás el banner y el menú:
+
+```
+╭─ susu ─────────────────────────────────╮
+│  Instalada: v0.0.1   Disponible: v0.0.2
+╰────────────────────────────────────────╯
+  1) Instalar
+  2) Actualizar
+  3) Borrar (restaurar Termux)
+  4) Salir
+```
+
+- **1 · Instalar** — instala paquetes que falten, hace backup y copia las configs.
+- **2 · Actualizar** — compara versiones con SemVer real y solo descarga si hay una nueva.
+- **3 · Borrar** — confirmación escribiendo `si`/`yes`, backup opcional y reseteo total
+  (nunca toca tus claves SSH privadas).
+- La primera vez pregunta el idioma y lo guarda en `~/.config/susu/lang`.
+  Cámbialo cuando quieras: `bash install.sh --lang en` (o `es`).
 
 ## 📸 Vista previa
 
 <!-- Sube tus capturas a assets/screenshots/ y tu demo a assets/demo.gif -->
 
 <div align="center">
-  <img src="assets/screenshots/preview-1.png" alt="Prompt y saludo de bienvenida" width="45%"/>
+  <img src="assets/screenshots/banner.png" alt="Banner 3D SUSU" width="60%"/>
+  <br/><br/>
+  <img src="assets/screenshots/preview-1.png" alt="Menú principal e idioma" width="45%"/>
   <img src="assets/screenshots/preview-2.png" alt="fastfetch con arte ASCII" width="45%"/>
   <br/><br/>
-  <img src="assets/demo.gif" alt="Demo de instalación" width="80%"/>
+  ▶️ [Ver vídeo demo](assets/demo.mp4)
 </div>
 
 ## ⚡ Instalación
@@ -98,11 +124,32 @@ susu/
 
 ## 🗑 Desinstalación
 
+Dos formas equivalentes (la opción 3 del menú hace exactamente lo mismo):
+
+1. Ejecuta el instalador y elige **3) Borrar**.
+2. O directamente:
+
 ```bash
 bash <(curl -fsSL https://raw.githubusercontent.com/jephersonRD/susu/main/uninstall.sh)
 ```
 
-Restaura el backup más reciente de `~/.susu-backup/` y elimina lo que no existiera antes. **No desinstala paquetes**; si quieres quitarlos: `pkg uninstall zsh htop yazi fastfetch openssh`.
+Pide confirmación escribiendo **`si`** / **`yes`**, ofrece un backup rápido en
+`~/.susu-backup/<fecha>` y después:
+
+- elimina `~/.zshrc`, los configs de fastfetch/htop/yazi, `~/.ssh/config` y `~/.config/susu`;
+- restaura el shell por defecto (`chsh -s bash`);
+- desinstala los paquetes `zsh`, `htop`, `yazi`, `fastfetch` y `openssh`.
+
+> ⚠️ Tus claves privadas (`~/.ssh/id_*`) y `known_hosts` **nunca** se tocan.
+
+## 🆕 Novedades v0.0.2
+
+- Banner 3D «SUSU» con degradado y versión dinámica.
+- Selector de idioma ES/EN (`--lang`) y menú de 4 opciones.
+- Opción de borrado completo + desinstalador alineado.
+- Comparación SemVer numérica real en Actualizar.
+
+Historial completo en [CHANGELOG.md](CHANGELOG.md).
 
 ## 🚢 Publicar una nueva versión (mantenedor)
 
