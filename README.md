@@ -1,7 +1,7 @@
 <div align="center">
 
 <!-- Reemplaza con tu banner: sube assets/banner.png -->
-<img src="assets/banner.png" alt="susu" width="640"/>
+<img src="assets/banner.png" alt="susu" width="340"/>
 
 # susu
 
@@ -20,18 +20,6 @@
 
 Repositorio con **mi setup completo de Termux**: shell zsh con prompt estilo powerline en tonos morado/azul pastel, saludo de bienvenida animado, fastfetch con arte ASCII, y las herramientas de terminal que uso a diario — todo instalable con **una sola línea** y restaurable con otra.
 
-## ✨ Características
-
-- 🎛 **Menú interactivo** — 1) Instalar · 2) Actualizar · 3) Borrar · 4) Salir.
-- 🌐 **Selector de idioma** — Español/English, se recuerda y se cambia con `--lang`.
-- 🏷 **Banner 3D «SUSU»** — degradado morado → cian con la versión dinámica.
-- 🚀 **Instalación en 1 comando** — detecta versiones, descarga el último release y configura todo.
-- 📊 **Progreso real de descarga** — barra con porcentaje, tamaño y velocidad obtenidos del `Content-Length`.
-- 🔁 **Idempotente** — ejecútalo las veces que quieras; solo instala lo que falta.
-- 💾 **Backups automáticos** — tus configs anteriores se guardan antes de sobrescribir.
-- 🧹 **Borrado completo** — la opción 3 deja Termux por defecto (configs + paquetes + shell).
-- 🔐 **Sin secretos** — cero claves privadas, tokens o contraseñas en el repo.
-
 ## 🕹 Uso
 
 Al ejecutarlo verás el banner y el menú:
@@ -44,6 +32,13 @@ Al ejecutarlo verás el banner y el menú:
   2) Actualizar
   3) Borrar (restaurar Termux)
   4) Salir
+```
+<img src="assets/1.png" alt="susu" width="340"/>
+
+## ⚡ Instalación
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/jephersonRD/susu/main/install.sh | bash
 ```
 
 - **1 · Instalar** — instala paquetes que falten, hace backup y copia las configs.
@@ -65,12 +60,6 @@ Al ejecutarlo verás el banner y el menú:
   <br/><br/>
   ▶️ [Ver vídeo demo](assets/demo.mp4)
 </div>
-
-## ⚡ Instalación
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/jephersonRD/susu/main/install.sh | bash
-```
 
 Al terminar, **cierra y vuelve a abrir Termux**.
 
@@ -102,74 +91,6 @@ Y estas configuraciones se copian a tu `$HOME`:
 | `config/yazi/yazi.toml`      | `~/.config/yazi/yazi.toml`  |
 | `config/ssh/config`          | `~/.ssh/config` (modo 600)  |
 
-## 🗂 Estructura del repositorio
-
-```
-susu/
-├── install.sh                  # Instalador de una línea
-├── uninstall.sh                # Restaura el último backup
-├── VERSION                     # Versión actual (SemVer)
-├── CHANGELOG.md                # Historial de cambios (Keep a Changelog)
-├── LICENSE                     # MIT
-├── config/
-│   ├── zsh/.zshrc
-│   ├── fastfetch/config.jsonc + logo.txt
-│   ├── htop/htoprc
-│   ├── yazi/yazi.toml
-│   └── ssh/config              # ⚠ solo plantilla, nunca claves
-├── assets/                     # Banner, capturas y vídeos del README
-└── ci/                      # renómbralo a .github/workflows/release.yml para activarlo
-    └── release.yml             # Publica release + .tar.gz en cada tag
-```
-
-## 🗑 Desinstalación
-
-Dos formas equivalentes (la opción 3 del menú hace exactamente lo mismo):
-
-1. Ejecuta el instalador y elige **3) Borrar**.
-2. O directamente:
-
-```bash
-bash <(curl -fsSL https://raw.githubusercontent.com/jephersonRD/susu/main/uninstall.sh)
-```
-
-Pide confirmación escribiendo **`si`** / **`yes`**, ofrece un backup rápido en
-`~/.susu-backup/<fecha>` y después:
-
-- elimina `~/.zshrc`, los configs de fastfetch/htop/yazi, `~/.ssh/config` y `~/.config/susu`;
-- restaura el shell por defecto (`chsh -s bash`);
-- desinstala los paquetes `zsh`, `htop`, `yazi`, `fastfetch` y `openssh`.
-
-> ⚠️ Tus claves privadas (`~/.ssh/id_*`) y `known_hosts` **nunca** se tocan.
-
-## 🆕 Novedades v0.0.2
-
-- Banner 3D «SUSU» con degradado y versión dinámica.
-- Selector de idioma ES/EN (`--lang`) y menú de 4 opciones.
-- Opción de borrado completo + desinstalador alineado.
-- Comparación SemVer numérica real en Actualizar.
-
-Historial completo en [CHANGELOG.md](CHANGELOG.md).
-
-## 🚢 Publicar una nueva versión (mantenedor)
-
-Este proyecto usa [SemVer](https://semver.org/lang/es/).
-
-```bash
-# 1. Actualiza VERSION y CHANGELOG.md
-echo "0.0.2" > VERSION
-
-# 2. Commit y tag
-git add -A && git commit -m "release: v0.0.2"
-git tag v0.0.2
-git push origin main --tags
-```
-
-El workflow [`release.yml`](ci/release.yml) crea automáticamente el release y adjunta el `.tar.gz`. También puedes hacerlo manual:
-
-```bash
-gh release create v0.0.2 -t "susu v0.0.2" --generate-notes
-```
 
 ## 🤝 Contribuciones
 
