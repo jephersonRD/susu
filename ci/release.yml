@@ -39,7 +39,8 @@ jobs:
           NAME="susu-${TAG#v}"
           mkdir -p dist
           # git archive empaqueta el tag con carpeta raíz susu-X.Y.Z/
-          git archive --format=tar.gz --prefix="${NAME}/" -o "dist/${NAME}.tar.gz" "${TAG}"
+          # Se excluye assets/ (vídeos e imágenes) para que el paquete sea ligero
+          git archive --format=tar.gz --prefix="${NAME}/" -o "dist/${NAME}.tar.gz" "${TAG}" -- ':(exclude)assets'
           echo "PAQUETE=dist/${NAME}.tar.gz" >> "$GITHUB_ENV"
           ls -lh dist/
 
