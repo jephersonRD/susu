@@ -5,6 +5,26 @@ Todos los cambios notables de este proyecto se documentan en este archivo.
 El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/),
 y este proyecto adhiere a [Semantic Versioning](https://semver.org/lang/es/).
 
+## [0.0.4] - 2026-10-22
+
+### Añadido
+- **Ediciones Lite y Full**, visibles en el banner (`v0.0.4 · Lite|Full`) y en el menú:
+  - **Lite** — solo el tema y las herramientas (comportamiento anterior).
+  - **Full** — Lite **+ opencode**, instalado desde el `.deb` nativo bionic para
+    Termux publicado por la comunidad ([Hope2333/opencode-termux](https://github.com/Hope2333/opencode-termux)).
+    El instalador oficial de opencode no sirve en Android porque usa glibc/musl.
+- **Opción 4 del menú** para cambiar de edición (Lite ↔ Full) y flags
+  `--lite` / `--full` para forzar la edición sin menú.
+- La edición se guarda en `~/.config/susu/edition` y se mantiene al actualizar.
+- Resolución automática del `.deb` más reciente (con fallback fijo si la API de
+  GitHub falla o limita), comprobación de espacio libre y aviso en arquitecturas
+  sin build (se queda en Lite).
+- Si susu instaló opencode, el desinstalador también lo elimina.
+
+### Cambiado
+- El menú pasa a 5 opciones: Instalar · Actualizar · Borrar · Cambiar edición · Salir.
+- `install.sh` muestra "opencode ya instalado" si ya estaba presente (no lo reinstala).
+
 ## [Unreleased]
 
 ## [0.0.3] - 2026-10-22
@@ -74,6 +94,7 @@ y este proyecto adhiere a [Semantic Versioning](https://semver.org/lang/es/).
 - Workflow de GitHub Actions para publicar releases con `.tar.gz` al crear tags.
 - Licencia MIT, README profesional y carpeta `assets/` para imágenes y vídeos.
 
+[0.0.4]: https://github.com/jephersonRD/susu/releases/tag/v0.0.4
 [0.0.3]: https://github.com/jephersonRD/susu/releases/tag/v0.0.3
 [0.0.2]: https://github.com/jephersonRD/susu/releases/tag/v0.0.2
 [0.0.1]: https://github.com/jephersonRD/susu/releases/tag/v0.0.1

@@ -7,7 +7,8 @@
 #  Funciones:
 #    · Banner 3D "SUSU" con degradado morado → cian (editable en variables).
 #    · Selector de idioma Español/English (recordado en ~/.config/susu/lang).
-#    · Menú: 1) Instalar  2) Actualizar  3) Borrar  4) Salir
+#    · Menú: 1) Instalar  2) Actualizar  3) Borrar  4) Edición  5) Salir
+#    · Dos ediciones: Lite (solo tema) y Full (tema + opencode).
 #    · Descarga con barra de progreso REAL (Content-Length + velocidad).
 #    · Backup de configs previas e instalación idempotente de paquetes.
 #    · Aplica ~/.termux (colores, fuente, teclas) + shell zsh por defecto.
@@ -21,13 +22,21 @@ set -euo pipefail
 #  CONFIGURACIÓN FÁCIL DE EDITAR
 # =============================================================================
 REPO="jephersonRD/susu"                                   # user/repo de GitHub
-SCRIPT_VERSION="0.0.3"                                   # versión del instalador (fuente única)
+SCRIPT_VERSION="0.0.4"                                   # versión del instalador (fuente única)
 API_LATEST="https://api.github.com/repos/${REPO}/releases/latest"
 RAW_MAIN="https://codeload.github.com/${REPO}/tar.gz/refs/heads/main"
+
+# opencode: build nativo bionic para Termux (no oficial; solo aarch64)
+OC_REPO="Hope2333/opencode-termux"
+OC_API="https://api.github.com/repos/${OC_REPO}/releases?per_page=10"
+OC_LATEST="https://api.github.com/repos/${OC_REPO}/releases/latest"
+OC_FALLBACK="https://github.com/${OC_REPO}/releases/download/Push261005/opencode_2.0.22_aarch64.deb"
+OC_MIN_MB=400                                            # espacio libre recomendado
 
 STATE_DIR="$HOME/.config/susu"                           # estado (lang, version)
 LANG_FILE="$STATE_DIR/lang"
 VERSION_FILE="$STATE_DIR/version"
+EDITION_FILE="$STATE_DIR/edition"                        # lite | full
 BACKUP_ROOT="$HOME/.susu-backup"                         # backups con fecha
 
 # Paquetes que instala susu (los usa el .zshrc y el prompt)
@@ -71,8 +80,9 @@ ES[menu_latest]="Disponible"
 ES[menu_opt1]="Instalar"
 ES[menu_opt2]="Actualizar"
 ES[menu_opt3]="Borrar (restaurar Termux)"
-ES[menu_opt4]="Salir"
-ES[menu_prompt]="Elige una opción [1-4]:"
+ES[menu_opt4]="Cambiar edición (Lite/Full)"
+ES[menu_opt5]="Salir"
+ES[menu_prompt]="Elige una opción [1-5]:"
 ES[menu_invalid]="Opción no válida, inténtalo de nuevo."
 ES[menu_none]="no instalada"
 ES[menu_unknown]="desconocida"
@@ -113,6 +123,28 @@ ES[plugins_failed]="No se pudo instalar el plugin"
 ES[shell_done]="Shell por defecto: zsh (se aplica al reabrir Termux)"
 ES[shell_warn]="No se encontró zsh: se mantiene el shell actual"
 ES[reinstall_prompt]="Ya está instalado. ¿Reaplicar toda la configuración? (s/n):"
+ES[edition]="Edición"
+ES[edition_lite]="Lite"
+ES[edition_full]="Full"
+ES[edition_prompt]="Elige la edición de susu:"
+ES[edition_opt_lite]="Lite — solo el tema, sin opencode"
+ES[edition_opt_full]="Full — tema + opencode (~+65 MB descarga · 275 MB instalado)"
+ES[edition_current]="actual"
+ES[edition_saved_as]="Edición: %s"
+ES[edition_unchanged]="Se mantiene la edición actual"
+ES[edition_hint]="La edición se aplica al instalar o actualizar (opción 1 o 2)."
+ES[oc_keep]="opencode seguirá instalado; puedes quitarlo con: pkg uninstall opencode"
+ES[oc_on]="con opencode"
+ES[oc_off]="sin opencode"
+ES[oc_present]="opencode ya instalado"
+ES[oc_installing]="Instalando opencode (build nativo bionic para Termux)"
+ES[oc_downloading]="Descargando opencode %s"
+ES[oc_done]="opencode listo: escríbelo en la terminal para empezar"
+ES[oc_updating]="Actualizando opencode %s → %s"
+ES[oc_fail]="No se pudo instalar opencode (el resto de susu quedó listo). Reintenta con la opción 4."
+ES[oc_unsupported]="opencode solo tiene build para aarch64/arm64; en este dispositivo se usará Lite"
+ES[oc_space_low]="Solo quedan %s MB libres y opencode necesita ~400 MB. Se intentará igual."
+ES[summary_edition]="Edición:"
 ES[summary_termux]="Termux:"
 ES[summary_shell]="Shell:"
 ES[summary_termux_val]="colores · fuente · teclas · cursor"
@@ -145,8 +177,9 @@ EN[menu_latest]="Available"
 EN[menu_opt1]="Install"
 EN[menu_opt2]="Update"
 EN[menu_opt3]="Uninstall (restore Termux)"
-EN[menu_opt4]="Exit"
-EN[menu_prompt]="Choose an option [1-4]:"
+EN[menu_opt4]="Change edition (Lite/Full)"
+EN[menu_opt5]="Exit"
+EN[menu_prompt]="Choose an option [1-5]:"
 EN[menu_invalid]="Invalid option, try again."
 EN[menu_none]="not installed"
 EN[menu_unknown]="unknown"
@@ -187,6 +220,28 @@ EN[plugins_failed]="Could not install plugin"
 EN[shell_done]="Default shell: zsh (applies when Termux reopens)"
 EN[shell_warn]="zsh not found: keeping current shell"
 EN[reinstall_prompt]="Already installed. Reapply the whole configuration? (y/n):"
+EN[edition]="Edition"
+EN[edition_lite]="Lite"
+EN[edition_full]="Full"
+EN[edition_prompt]="Choose the susu edition:"
+EN[edition_opt_lite]="Lite — theme only, no opencode"
+EN[edition_opt_full]="Full — theme + opencode (~+65 MB download · 275 MB installed)"
+EN[edition_current]="current"
+EN[edition_saved_as]="Edition: %s"
+EN[edition_unchanged]="Keeping the current edition"
+EN[edition_hint]="The edition is applied when installing or updating (option 1 or 2)."
+EN[oc_keep]="opencode stays installed; remove it with: pkg uninstall opencode"
+EN[oc_on]="with opencode"
+EN[oc_off]="without opencode"
+EN[oc_present]="opencode already installed"
+EN[oc_installing]="Installing opencode (native bionic build for Termux)"
+EN[oc_downloading]="Downloading opencode %s"
+EN[oc_done]="opencode ready: type it in the terminal to start"
+EN[oc_updating]="Updating opencode %s → %s"
+EN[oc_fail]="Could not install opencode (the rest of susu is ready). Retry with option 4."
+EN[oc_unsupported]="opencode only ships aarch64/arm64 builds; this device will use Lite"
+EN[oc_space_low]="Only %s MB free and opencode needs ~400 MB. Trying anyway."
+EN[summary_edition]="Edition:"
 EN[summary_termux]="Termux:"
 EN[summary_shell]="Shell:"
 EN[summary_termux_val]="colors · font · extra keys · cursor"
@@ -210,6 +265,7 @@ EN[warn_noasset]="Release has no .tar.gz asset; using the tag tarball."
 EN[confirm_yes]="yes"
 
 LANG_CODE="es"   # se sobrescribe en select_language
+EDITION="lite"   # se sobrescribe en load_edition (lite | full)
 
 # t <clave> → imprime el texto en el idioma activo (fallback a ES)
 t() {
@@ -294,11 +350,12 @@ print_banner() {
       printf '\e[38;5;%sm%s%s\n' "${SUSU_GRADIENT[i]:-141}" "$line" "$N"
       (( i++ )) || true
     done
-    printf '      %sMy Termux Config · v%s%s\n\n' "$D" "$SCRIPT_VERSION" "$N"
+    printf '      %sMy Termux Config · v%s%s · %s%s%s\n\n' \
+      "$D" "$SCRIPT_VERSION" "$N" "$BOLD$B" "$(edition_name)" "$N"
   else
     # Terminal muy estrecha: banner compacto (mínimo 40 columnas recomendado)
-    printf '  %s%sSUSU%s %s· My Termux Config · v%s%s\n\n' \
-      "$BOLD" "$P" "$N" "$D" "$SCRIPT_VERSION" "$N"
+    printf '  %s%sSUSU%s %s· v%s · %s%s\n\n' \
+      "$BOLD" "$P" "$N" "$D" "$SCRIPT_VERSION" "$(edition_name)" "$N"
   fi
 }
 
@@ -335,6 +392,34 @@ select_language() {
 }
 
 # =============================================================================
+#  Selector de edición (Lite / Full) — se guarda en ~/.config/susu/edition
+# =============================================================================
+choose_edition() {
+  # --lite / --full tienen prioridad y no preguntan
+  if [[ -n "${CLI_EDITION:-}" ]]; then
+    EDITION="$CLI_EDITION"; save_edition
+    ok "$(tp edition_saved_as "$(edition_name)")"
+    return 0
+  fi
+  printf '  %s%s%s\n' "$BOLD" "$(t edition_prompt)" "$N"
+  local mark_l="" mark_f=""
+  [[ "$EDITION" == "lite" ]] && mark_l="  $D($(t edition_current))$N"
+  [[ "$EDITION" == "full" ]] && mark_f="  $D($(t edition_current))$N"
+  printf '  %s1)%s %s%s\n' "$B" "$N" "$(t edition_opt_lite)" "$mark_l"
+  printf '  %s2)%s %s%s\n' "$B" "$N" "$(t edition_opt_full)" "$mark_f"
+  local ans=""
+  if ask ans "  →"; then
+    case "$ans" in
+      1|l|L|lite|Lite) EDITION="lite" ;;
+      2|f|F|full|Full) EDITION="full" ;;
+      *) info "$(t edition_unchanged)" ;;
+    esac
+  fi
+  save_edition
+  ok "$(tp edition_saved_as "$(edition_name)")"
+}
+
+# =============================================================================
 #  Versiones: instalada, remota y comparación SemVer real
 # =============================================================================
 installed_version() {
@@ -342,6 +427,18 @@ installed_version() {
   [[ -f "$VERSION_FILE" ]] && v=$(head -n1 "$VERSION_FILE" 2>/dev/null || true)
   if [[ -n "$v" ]]; then printf '%s' "$v"; else printf 'no instalada'; fi
 }
+
+# =============================================================================
+#  Edición: Lite (sin opencode) · Full (con opencode)
+# =============================================================================
+saved_edition() {
+  local e=""
+  [[ -f "$EDITION_FILE" ]] && e=$(head -n1 "$EDITION_FILE" 2>/dev/null || true)
+  case "$e" in full|lite) printf '%s' "$e" ;; *) printf 'lite' ;; esac
+}
+load_edition() { EDITION="$(saved_edition)"; }
+save_edition() { mkdir -p "$STATE_DIR"; printf '%s\n' "$EDITION" > "$EDITION_FILE"; }
+edition_name() { [[ "${1:-$EDITION}" == "full" ]] && t edition_full || t edition_lite; }
 
 # semver_gt A B → verdadero si A > B (comparación numérica por segmentos)
 semver_gt() {
@@ -450,6 +547,36 @@ download_with_progress() {   # <url> <destino>
 }
 
 # =============================================================================
+#  Descarga simple con la misma barra (para paquetes extra como opencode)
+# =============================================================================
+download_plain() {   # <url> <destino> <etiqueta>
+  local url="$1" out="$2" label="$3" total
+  total=$(remote_size "$url"); total=${total:-0}
+  printf '\n  %s⬇ %s%s\n\n' "$BOLD$P" "$label" "$N"
+  hide_cursor
+  curl -fsSL -o "$out" "$url" & local pid=$!
+  local size=0 prev=0 t_prev=$SECONDS speed=0 dt
+  while kill -0 "$pid" 2>/dev/null; do
+    size=$(stat -c %s "$out" 2>/dev/null || echo 0)
+    dt=$(( SECONDS - t_prev ))
+    if (( dt >= 1 )); then
+      speed=$(( (size - prev) / dt )); prev=$size; t_prev=$SECONDS
+    fi
+    draw_bar "$size" "$total" "$speed"
+    sleep 0.2
+  done
+  if wait "$pid"; then
+    size=$(stat -c %s "$out" 2>/dev/null || echo 0)
+    show_cursor
+    (( total > 0 )) || total=$size
+    draw_bar "$size" "$total" "$speed"; printf '\n\n'
+  else
+    show_cursor
+    die "$(t err_download)"
+  fi
+}
+
+# =============================================================================
 #  Spinner con el mismo estilo, para pasos largos (pkg...)
 # =============================================================================
 run_with_spinner() {   # <mensaje> cmd args...
@@ -502,6 +629,93 @@ install_packages() {
     command -v "$cmd" >/dev/null 2>&1 || die "$(t err_pkg) '$p'."
   done
   ok "$(t pkg_ready): ${PKGS[*]}"
+}
+
+# =============================================================================
+#  opencode (edición Full) — .deb nativo bionic publicado por la comunidad
+#  para Termux (el instalador oficial no soporta Android/bionic).
+#  Solo existe build aarch64/arm64.
+# =============================================================================
+OC_DEB_NAME=""; OC_DEB_URL=""
+
+# Elige el .deb aarch64 más nuevo del JSON de la API (o usa el fallback fijo)
+oc_resolve_deb() {
+  OC_DEB_NAME=""; OC_DEB_URL=""
+  local json="" names="" deb="" url=""
+
+  _oc_pick() {   # <json> — usa el ámbito dinámico para deb/url
+    names=$(printf '%s' "$1" \
+      | grep -oE 'opencode_[0-9]+\.[0-9]+\.[0-9]+_aarch64\.deb' \
+      | sort -uV || true)
+    deb=$(printf '%s\n' "$names" | sed '/^$/d' | tail -n1 || true)
+    [[ -n "$deb" ]] || return 1
+    url=$(printf '%s' "$1" | grep -oE "https:[^\"]+/${deb}" | head -n1 || true)
+    [[ -n "$url" ]] || return 1
+  }
+
+  json=$(curl -fsSL -m 30 "$OC_LATEST" 2>/dev/null || true)
+  _oc_pick "$json" || true
+  if [[ -z "$url" ]]; then
+    json=$(curl -fsSL -m 30 "$OC_API" 2>/dev/null || true)
+    _oc_pick "$json" || true
+  fi
+  if [[ -z "$url" ]]; then
+    OC_DEB_NAME="2.0.27"
+    OC_DEB_URL="$OC_FALLBACK"
+    return 0
+  fi
+  OC_DEB_NAME="${deb#opencode_}"; OC_DEB_NAME="${OC_DEB_NAME%_aarch64.deb}"
+  OC_DEB_URL="$url"
+}
+
+install_opencode() {
+  local cur=""
+  if command -v opencode >/dev/null 2>&1; then
+    cur=$(opencode --version 2>/dev/null | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -n1 || true)
+  fi
+
+  if [[ -z "$cur" ]]; then
+    local arch; arch="$(uname -m)"
+    if [[ "$arch" != "aarch64" && "$arch" != "arm64" ]]; then
+      warn "$(t oc_unsupported)"
+      EDITION="lite"; save_edition
+      return 1
+    fi
+  fi
+
+  oc_resolve_deb
+
+  # Ya instalado y sin versión más nueva → nada que hacer
+  if [[ -n "$cur" ]] && { [[ -z "$OC_DEB_NAME" ]] || ! semver_gt "$OC_DEB_NAME" "$cur"; }; then
+    ok "$(t oc_present) (v$cur)"
+    return 0
+  fi
+  if [[ -z "$OC_DEB_URL" ]]; then
+    warn "$(t oc_fail)"
+    return 1
+  fi
+  [[ -n "$cur" ]] && { info "$(tp oc_updating "$cur" "$OC_DEB_NAME")"; }
+
+  local free_mb
+  free_mb=$(df -Pk "$HOME" 2>/dev/null | awk 'NR==2 {print int($4/1024)}' || true)
+  if [[ -n "$free_mb" ]] && (( free_mb < OC_MIN_MB )); then
+    warn "$(tp oc_space_low "$free_mb")"
+  fi
+
+  local tmp; tmp=$(mktemp -d)
+  download_plain "$OC_DEB_URL" "$tmp/opencode.deb" "$(tp oc_downloading "$OC_DEB_NAME")"
+  if run_with_spinner "$(t oc_installing)" \
+       env DEBIAN_FRONTEND=noninteractive apt install -y "$tmp/opencode.deb"; then
+    rm -rf "$tmp"
+    mkdir -p "$STATE_DIR"
+    printf 'opencode\n' >> "$STATE_DIR/installed_pkgs"
+    sort -u -o "$STATE_DIR/installed_pkgs" "$STATE_DIR/installed_pkgs"
+    ok "$(t oc_done)"
+  else
+    rm -rf "$tmp"
+    warn "$(t oc_fail)"
+    return 1
+  fi
 }
 
 # =============================================================================
@@ -651,6 +865,10 @@ do_download_and_apply() {
   install_zsh_plugins
   set_default_shell
 
+  # Edición Full: opencode (si falla, el resto queda funcionando)
+  [[ "$EDITION" == "full" ]] && install_opencode || true
+  save_edition
+
   mkdir -p "$STATE_DIR"
   # Ruta del backup para poder restaurarlo desde el desinstalador
   [[ -n "$BACKUP_DIR" && -d "$BACKUP_DIR" ]] \
@@ -669,6 +887,7 @@ do_download_and_apply() {
   printf '\n│  %s✔ %s%s' "$G" "$(t summary_title)" "$N"
   printf '\n╰──────────────────────────────────────────────╯%s\n' "$N"
   printf '  %s•%s %s %s\n' "$P" "$N" "$(t summary_version)" "$TAG_DISPLAY"
+  printf '  %s•%s %s %s%s%s\n' "$P" "$N" "$(t summary_edition)" "$BOLD$B" "$(edition_name)" "$N"
   printf '  %s•%s %s %s\n' "$P" "$N" "$(t summary_pkgs)" "${PKGS[*]}"
   printf '  %s•%s %s ~/.zshrc · fastfetch · htop · yazi · ssh · starship\n' "$P" "$N" "$(t summary_configs)"
   printf '  %s•%s %s %s\n' "$P" "$N" "$(t summary_termux)" "$(t summary_termux_val)"
@@ -690,12 +909,13 @@ action_install() {
     local ans=""
     if ask ans "  $(t reinstall_prompt)"; then
       case "$ans" in
-        s|S|y|Y) do_download_and_apply ;;
+        s|S|y|Y) choose_edition; do_download_and_apply ;;
         *) info "$(t uninstall_aborted)" ;;
       esac
     fi
     return 0
   fi
+  choose_edition
   do_download_and_apply
 }
 
@@ -720,7 +940,25 @@ action_update() {
     do_download_and_apply
   else
     ok "$(tp up_to_date "$cur")"
+    # Edición Full: comprobar/instalar/actualizar opencode
+    if [[ "$EDITION" == "full" ]]; then
+      install_opencode || true
+    fi
   fi
+}
+
+# =============================================================================
+#  Opción 4 — Cambiar edición (Lite / Full)
+# =============================================================================
+action_edition() {
+  choose_edition
+  if [[ "$EDITION" == "full" ]]; then
+    install_opencode || true
+  elif command -v opencode >/dev/null 2>&1; then
+    info "$(t oc_keep)"
+  fi
+  [[ "$(installed_version)" == "no instalada" ]] && info "$(t edition_hint)"
+  return 0
 }
 
 # =============================================================================
@@ -791,11 +1029,15 @@ print_menu() {
   printf '%s│%s  %s: %s%s%s  %s: %s%s%s\n' \
     "$P" "$N" "$(t menu_installed)" "$B" "$cur" "$N" \
     "$(t menu_latest)" "$B" "$latest" "$N"
+  printf '%s│%s  %s: %s%s%s%s %s\n' \
+    "$P" "$N" "$(t edition)" "$BOLD$B" "$(edition_name)" "$N" "$D" \
+    "$([[ "$EDITION" == "full" ]] && t oc_on || t oc_off)"
   printf '%s╰%s╯%s\n' "$P" "$full" "$N"
   printf '  %s1)%s %s\n' "$B" "$N" "$(t menu_opt1)"
   printf '  %s2)%s %s\n' "$B" "$N" "$(t menu_opt2)"
   printf '  %s3)%s %s\n' "$B" "$N" "$(t menu_opt3)"
-  printf '  %s4)%s %s\n\n' "$B" "$N" "$(t menu_opt4)"
+  printf '  %s4)%s %s\n' "$B" "$N" "$(t menu_opt4)"
+  printf '  %s5)%s %s\n\n' "$B" "$N" "$(t menu_opt5)"
 }
 
 menu_loop() {
@@ -813,7 +1055,8 @@ menu_loop() {
       1) action_install ;;
       2) action_update ;;
       3) action_uninstall ;;
-      4) info "$(t goodbye)"; exit 0 ;;
+      4) action_edition ;;
+      5) info "$(t goodbye)"; exit 0 ;;
       *) warn "$(t menu_invalid)"; printf '\n' ;;
     esac
     printf '\n'
@@ -821,16 +1064,21 @@ menu_loop() {
 }
 
 # =============================================================================
-#  Argumentos de línea de comandos: --lang es|en
+#  Argumentos de línea de comandos: --lang es|en   --lite|--full
 # =============================================================================
 parse_args() {
-  CLI_LANG=""
+  CLI_LANG=""; CLI_EDITION=""
   while (( $# )); do
     case "$1" in
       --lang=*) CLI_LANG="${1#--lang=}" ;;
       --lang)   shift || true; CLI_LANG="${1:-}" ;;
+      --lite|--full) CLI_EDITION="${1#--}" ;;
+      --edition=*)   CLI_EDITION="${1#--edition=}" ;;
+      --edition)     shift || true; CLI_EDITION="${1:-}" ;;
       -h|--help)
-        printf 'Uso: install.sh [--lang es|en]\n'
+        printf 'Uso: install.sh [--lang es|en] [--lite|--full]\n'
+        printf '     --lite   solo tema (sin opencode)\n'
+        printf '     --full   tema + opencode\n'
         exit 0 ;;
       *) ;;   # ignorar desconocidos
     esac
@@ -840,6 +1088,10 @@ parse_args() {
     es|en) ;;
     *) CLI_LANG="" ;;
   esac
+  case "${CLI_EDITION:-}" in
+    lite|full) ;;
+    *) CLI_EDITION="" ;;
+  esac
 }
 
 # =============================================================================
@@ -848,6 +1100,11 @@ parse_args() {
 main() {
   parse_args "$@"
   check_environment          # silencioso salvo error
+
+  load_edition               # lite | full (guardada)
+  if [[ -n "${CLI_EDITION:-}" ]]; then
+    EDITION="$CLI_EDITION"; save_edition
+  fi
 
   print_banner               # clear + banner 3D con degradado
   select_language            # 1er paso: idioma (o --lang / idioma guardado)
