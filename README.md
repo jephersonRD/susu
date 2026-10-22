@@ -44,7 +44,7 @@ Al ejecutarlo verás el banner con la edición activa y el menú:
   4) Cambiar edición (Lite/Full)
   5) Salir
 ```
-<img src="assets/1.png" alt="susu" width="340"/>
+<img src="assets/screenshots/greeting.png" alt="Saludo de bienvenida de susu" width="340"/>
 
 ## ⚡ Instalación
 
@@ -84,16 +84,18 @@ Requisitos de la edición Full:
 
 ## 📸 Vista previa
 
-<!-- Sube tus capturas a assets/screenshots/ y tu demo a assets/demo.gif -->
-
 <div align="center">
-  <img src="assets/screenshots/banner.png" alt="Banner 3D SUSU" width="60%"/>
+  <img src="assets/screenshots/fastfetch.png" alt="fastfetch con arte ASCII pastel" width="45%"/>
+  <img src="assets/screenshots/yazi.png" alt="yazi con iconos y colores" width="45%"/>
   <br/><br/>
-  <img src="assets/screenshots/preview-1.png" alt="Menú principal e idioma" width="45%"/>
-  <img src="assets/screenshots/preview-2.png" alt="fastfetch con arte ASCII" width="45%"/>
-  <br/><br/>
-  ▶️ [Ver vídeo demo](assets/demo.mp4)
+  <img src="assets/screenshots/htop.png" alt="htop con el tema pastel" width="45%"/>
 </div>
+
+### 🎬 Demo
+
+https://github.com/user-attachments/assets/13f858ad-4784-4cd5-9140-c553d7fd5483
+
+<sub>¿No carga el reproductor? [Abre el vídeo en el repo](assets/demo.mp4).</sub>
 
 Al terminar, **cierra y vuelve a abrir Termux** (o abre una pestaña nueva) para entrar
 en zsh. Los colores, la fuente y las teclas extra se aplican al instante con
