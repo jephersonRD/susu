@@ -32,7 +32,7 @@ export FZF_DEFAULT_OPTS='--height 40% --layout=reverse --border --info=inline
 [[ -f "$PREFIX/share/fzf/key-bindings.zsh" ]] && source "$PREFIX/share/fzf/key-bindings.zsh"
 [[ -f "$PREFIX/share/fzf/completion.zsh"   ]] && source "$PREFIX/share/fzf/completion.zsh"
 
-# ── Plugins (clonados por setup.sh) ──────────────────────────────────────────
+# ── Plugins (clonados por install.sh) ────────────────────────────────────────
 ZSH_AUTOSUGGEST_STRATEGY=(history completion)
 ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE='fg=243'
 ZSH_HIGHLIGHT_HIGHLIGHTERS=(main brackets)
@@ -46,9 +46,11 @@ ZSH_HIGHLIGHT_HIGHLIGHTERS=(main brackets)
 (( $+commands[zoxide] )) && eval "$(zoxide init zsh)"
 
 # ── Aliases ──────────────────────────────────────────────────────────────────
-alias ll='eza -la --icons --group-directories-first'
-alias ls='eza --icons --group-directories-first'
-alias lt='eza --tree --icons --level=2'
+# Iconos solo si hay fuente Nerd Font instalada (susu la copia en ~/.termux)
+if [[ -f ~/.termux/font.ttf ]]; then EZA_ICONS=(--icons); else EZA_ICONS=(); fi
+alias ll="eza -la ${EZA_ICONS[*]} --group-directories-first"
+alias ls="eza ${EZA_ICONS[*]} --group-directories-first"
+alias lt="eza --tree ${EZA_ICONS[*]} --level=2"
 alias cat='bat --style=plain --paging=never'
 alias y='yazi'
 alias top='htop'
@@ -74,12 +76,12 @@ function yy() {
 #  ➜ Edita los mensajes en el array TERMUX_GREETINGS
 # =============================================================================
 TERMUX_GREETINGS=(
-  "Hola, jefe, ¡bienvenido!"
-  "¡Saludos, Jeph! ¿Cómo estás?"
-  "¡Eyyy, mi hermano! Qué bueno verte por aquí"
+  "Hola, ${USER:-jefe}, ¡bienvenido!"
+  "¡Saludos, ${USER:-jefe}! ¿Cómo estás?"
+  "¡Eyyy! Qué bueno verte por aquí"
   "¡Hola, máquina! Bienvenido, ponte cómodo"
   "¡Wassup, jefe! ¿Todo bien por ahí?"
-  "¡Buenas, Jeph! Un gusto tenerte por aquí, mi bro"
+  "¡Buenas! Un gusto tenerte por aquí"
 )
 TERMUX_GREETING_DELAY=0.03   # segundos por carácter
 

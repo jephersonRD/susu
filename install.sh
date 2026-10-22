@@ -10,6 +10,7 @@
 #    · Menú: 1) Instalar  2) Actualizar  3) Borrar  4) Salir
 #    · Descarga con barra de progreso REAL (Content-Length + velocidad).
 #    · Backup de configs previas e instalación idempotente de paquetes.
+#    · Aplica ~/.termux (colores, fuente, teclas) + shell zsh por defecto.
 #    · Desinstalación completa dejando Termux por defecto.
 #
 #  Autor: jephersonRD · Licencia: MIT
@@ -20,7 +21,7 @@ set -euo pipefail
 #  CONFIGURACIÓN FÁCIL DE EDITAR
 # =============================================================================
 REPO="jephersonRD/susu"                                   # user/repo de GitHub
-SCRIPT_VERSION="0.0.2"                                   # versión del instalador (fuente única)
+SCRIPT_VERSION="0.0.3"                                   # versión del instalador (fuente única)
 API_LATEST="https://api.github.com/repos/${REPO}/releases/latest"
 RAW_MAIN="https://codeload.github.com/${REPO}/tar.gz/refs/heads/main"
 
@@ -29,8 +30,17 @@ LANG_FILE="$STATE_DIR/lang"
 VERSION_FILE="$STATE_DIR/version"
 BACKUP_ROOT="$HOME/.susu-backup"                         # backups con fecha
 
-PKGS=(zsh htop yazi fastfetch openssh)                   # paquetes que instala susu
+# Paquetes que instala susu (los usa el .zshrc y el prompt)
+PKGS=(zsh starship eza bat fzf zoxide git htop yazi fastfetch openssh)
 BAR_W=20                                                 # ancho de la barra de progreso
+
+# Plugins de zsh (se clonan en el primer uso)
+ZSH_PLUGIN_DIR="$HOME/.local/share/zsh/plugins"
+ZSH_PLUGINS=(
+  "zsh-users/zsh-autosuggestions"
+  "zsh-users/zsh-syntax-highlighting"
+  "zsh-users/zsh-completions"
+)
 
 # ── Colores ANSI 256 (cámbialos aquí) ────────────────────────────────────────
 P=$'\e[38;5;141m'    # lila (color principal)
@@ -95,6 +105,18 @@ ES[pkg_ready]="Paquetes listos"
 ES[backup_done]="Backup de tus configs en"
 ES[backup_none]="No había configs previas — nada que respaldar"
 ES[configs_done]="Configuraciones copiadas a \$HOME"
+ES[termux_done]="Ajustes de la app Termux aplicados (~/.termux)"
+ES[termux_reload]="Termux recargó colores, fuente y teclas"
+ES[plugins_installing]="Instalando plugin"
+ES[plugins_ready]="Plugins de zsh listos"
+ES[plugins_failed]="No se pudo instalar el plugin"
+ES[shell_done]="Shell por defecto: zsh (se aplica al reabrir Termux)"
+ES[shell_warn]="No se encontró zsh: se mantiene el shell actual"
+ES[reinstall_prompt]="Ya está instalado. ¿Reaplicar toda la configuración? (s/n):"
+ES[summary_termux]="Termux:"
+ES[summary_shell]="Shell:"
+ES[summary_termux_val]="colores · fuente · teclas · cursor"
+ES[summary_shell_val]="zsh"
 ES[version_saved]="Versión instalada guardada"
 ES[summary_title]="Instalación completada"
 ES[summary_version]="Versión:"
@@ -157,6 +179,18 @@ EN[pkg_ready]="Packages ready"
 EN[backup_done]="Backup of your configs at"
 EN[backup_none]="No previous configs — nothing to back up"
 EN[configs_done]="Configs copied to \$HOME"
+EN[termux_done]="Termux app settings applied (~/.termux)"
+EN[termux_reload]="Termux reloaded colors, font and keys"
+EN[plugins_installing]="Installing plugin"
+EN[plugins_ready]="zsh plugins ready"
+EN[plugins_failed]="Could not install plugin"
+EN[shell_done]="Default shell: zsh (applies when Termux reopens)"
+EN[shell_warn]="zsh not found: keeping current shell"
+EN[reinstall_prompt]="Already installed. Reapply the whole configuration? (y/n):"
+EN[summary_termux]="Termux:"
+EN[summary_shell]="Shell:"
+EN[summary_termux_val]="colors · font · extra keys · cursor"
+EN[summary_shell_val]="zsh"
 EN[version_saved]="Installed version saved"
 EN[summary_title]="Installation complete"
 EN[summary_version]="Version:"
@@ -304,7 +338,9 @@ select_language() {
 #  Versiones: instalada, remota y comparación SemVer real
 # =============================================================================
 installed_version() {
-  [[ -f "$VERSION_FILE" ]] && cat "$VERSION_FILE" || printf 'no instalada'
+  local v=""
+  [[ -f "$VERSION_FILE" ]] && v=$(head -n1 "$VERSION_FILE" 2>/dev/null || true)
+  if [[ -n "$v" ]]; then printf '%s' "$v"; else printf 'no instalada'; fi
 }
 
 # semver_gt A B → verdadero si A > B (comparación numérica por segmentos)
@@ -420,10 +456,11 @@ run_with_spinner() {   # <mensaje> cmd args...
   local msg="$1"; shift
   hide_cursor
   "$@" &>/dev/null & local pid=$!
-  local frames=(⠋ ⠙ ⠹ ⠸ ⠼ ⠴ ⠦ ⠧ ⠇ ⠏) i=1
+  local frames=(⠋ ⠙ ⠹ ⠸ ⠼ ⠴ ⠦ ⠧ ⠇ ⠏) i=0
   while kill -0 "$pid" 2>/dev/null; do
     printf '\r  %s%s%s %s' "$P" "${frames[i]}" "$N" "$msg"
-    (( i = i % 10 + 1 )); sleep 0.1
+    # bash indexa arrays desde 0: avanzar con módulo del total
+    i=$(( (i + 1) % ${#frames[@]} )); sleep 0.1
   done
   show_cursor
   if wait "$pid"; then
@@ -445,6 +482,9 @@ install_packages() {
   done
   if (( ${#missing[@]} == 0 )); then
     ok "$(t pkg_all): ${PKGS[*]}"
+    mkdir -p "$STATE_DIR"
+    # No borrar el registro de paquetes de instalaciones anteriores
+    [[ -f "$STATE_DIR/installed_pkgs" ]] || : > "$STATE_DIR/installed_pkgs"
     return 0
   fi
   info "$(t pkg_installing): ${missing[*]}"
@@ -453,6 +493,10 @@ install_packages() {
     run_with_spinner "$(t pkg_installing) $p" pkg install -y "$p" \
       || die "$(t err_pkg) '$p'."
   done
+  # Registro para que el desinstalador quite SOLO lo que instaló susu
+  mkdir -p "$STATE_DIR"
+  printf '%s\n' "${missing[@]}" >> "$STATE_DIR/installed_pkgs"
+  sort -u -o "$STATE_DIR/installed_pkgs" "$STATE_DIR/installed_pkgs"
   for p in "${PKGS[@]}"; do
     cmd="$p"; [[ "$p" == openssh ]] && cmd=ssh
     command -v "$cmd" >/dev/null 2>&1 || die "$(t err_pkg) '$p'."
@@ -473,17 +517,27 @@ _bkp() {   # _bkp <ruta>
 backup_configs() {
   BACKUP_DIR="$BACKUP_ROOT/$(date +%Y%m%d-%H%M%S)"
   local before=0
-  [[ -e "$HOME/.zshrc" || -e "$HOME/.config/fastfetch" || -e "$HOME/.config/htop" \
-     || -e "$HOME/.config/yazi" || -e "$HOME/.ssh/config" ]] && before=1
-  _bkp "$HOME/.zshrc"
-  _bkp "$HOME/.config/fastfetch"
-  _bkp "$HOME/.config/htop"
-  _bkp "$HOME/.config/yazi"
-  _bkp "$HOME/.ssh/config"
+  local -a targets=(
+    "$HOME/.zshrc"
+    "$HOME/.config/fastfetch"
+    "$HOME/.config/htop"
+    "$HOME/.config/yazi"
+    "$HOME/.config/starship.toml"
+    "$HOME/.ssh/config"
+    "$HOME/.termux/termux.properties"
+    "$HOME/.termux/colors.properties"
+    "$HOME/.termux/font.ttf"
+  )
+  local p
+  for p in "${targets[@]}"; do
+    [[ -e "$p" ]] && before=1
+    _bkp "$p"
+  done
   if (( before )); then
     ok "$(t backup_done) $BACKUP_DIR"
   else
     rmdir "$BACKUP_DIR" 2>/dev/null || true
+    BACKUP_DIR=""
     info "$(t backup_none)"
   fi
 }
@@ -500,7 +554,74 @@ install_configs() {   # <dir origen> (contiene config/)
   mkdir -p "$HOME/.config/yazi" && cp "$src/config/yazi/"* "$HOME/.config/yazi/"
   mkdir -p "$HOME/.ssh"         && cp "$src/config/ssh/config" "$HOME/.ssh/config"
   chmod 700 "$HOME/.ssh" && chmod 600 "$HOME/.ssh/config"
+  # Prompt de Starship (sin esto el prompt sale genérico)
+  if [[ -f "$src/config/starship/starship.toml" ]]; then
+    mkdir -p "$HOME/.config"
+    cp "$src/config/starship/starship.toml" "$HOME/.config/starship.toml"
+  fi
   ok "$(t configs_done)"
+}
+
+# =============================================================================
+#  ~/.termux — colores, fuente y teclas de la app (esto es lo que "cambia" el
+#  aspecto del terminal; sin esto solo se copiaban archivos que nadie leía)
+# =============================================================================
+install_termux_settings() {   # <dir origen>
+  local src="$1" dst="$HOME/.termux" f
+  [[ -d "$src/config/termux" ]] || return 0
+  mkdir -p "$dst"
+  for f in termux.properties colors.properties; do
+    [[ -f "$src/config/termux/$f" ]] || continue
+    cp -f "$src/config/termux/$f" "$dst/$f"
+    chmod 600 "$dst/$f" 2>/dev/null || true
+  done
+  if [[ -f "$src/config/termux/font.ttf" ]]; then
+    cp -f "$src/config/termux/font.ttf" "$dst/font.ttf"
+    chmod 600 "$dst/font.ttf" 2>/dev/null || true
+  fi
+  ok "$(t termux_done)"
+  if command -v termux-reload-settings >/dev/null 2>&1; then
+    termux-reload-settings >/dev/null 2>&1 || true
+    ok "$(t termux_reload)"
+  fi
+}
+
+# =============================================================================
+#  Plugins de zsh (el .zshrc los busca en ~/.local/share/zsh/plugins)
+# =============================================================================
+install_zsh_plugins() {
+  command -v git >/dev/null 2>&1 || { warn "$(t plugins_failed): git"; return 0; }
+  mkdir -p "$ZSH_PLUGIN_DIR"
+  local repo name
+  for repo in "${ZSH_PLUGINS[@]}"; do
+    name="${repo##*/}"
+    [[ -d "$ZSH_PLUGIN_DIR/$name" ]] && continue
+    run_with_spinner "$(t plugins_installing) $name" \
+      git clone --depth=1 --quiet "https://github.com/$repo.git" "$ZSH_PLUGIN_DIR/$name" \
+      || warn "$(t plugins_failed): $name"
+  done
+  ok "$(t plugins_ready)"
+}
+
+# =============================================================================
+#  Shell por defecto → zsh (en Termux, chsh crea ~/.termux/shell)
+#  Sin esto Termux sigue abriendo bash y el .zshrc nunca se lee.
+# =============================================================================
+set_default_shell() {
+  local zsh_bin
+  zsh_bin="$(command -v zsh 2>/dev/null || true)"
+  if [[ -z "$zsh_bin" ]]; then
+    warn "$(t shell_warn)"
+    return 0
+  fi
+  if command -v chsh >/dev/null 2>&1 && chsh -s "$zsh_bin" >/dev/null 2>&1; then
+    ok "$(t shell_done)"
+    return 0
+  fi
+  # Fallback: enlace que usa la app Termux para lanzar el shell
+  mkdir -p "$HOME/.termux"
+  ln -sfn "$zsh_bin" "$HOME/.termux/shell"
+  ok "$(t shell_done)"
 }
 
 # =============================================================================
@@ -526,14 +647,22 @@ do_download_and_apply() {
   install_packages
   backup_configs
   install_configs "$SRC"
+  install_termux_settings "$SRC"
+  install_zsh_plugins
+  set_default_shell
 
   mkdir -p "$STATE_DIR"
+  # Ruta del backup para poder restaurarlo desde el desinstalador
+  [[ -n "$BACKUP_DIR" && -d "$BACKUP_DIR" ]] \
+    && printf '%s\n' "$BACKUP_DIR" > "$STATE_DIR/last_backup"
   if [[ "$TAG" == "main" ]]; then
     cat "$SRC/VERSION" > "$VERSION_FILE" 2>/dev/null || echo "main" > "$VERSION_FILE"
   else
     printf '%s\n' "${TAG#v}" > "$VERSION_FILE"
   fi
   ok "$(t version_saved): $(installed_version)"
+  # Si se usó la rama main, el resumen muestra la versión real del paquete
+  [[ "$TAG" == "main" ]] && TAG_DISPLAY="v$(installed_version)"
 
   # Resumen final
   printf '\n%s╭──────────────────────────────────────────────╮' "$P"
@@ -541,7 +670,10 @@ do_download_and_apply() {
   printf '\n╰──────────────────────────────────────────────╯%s\n' "$N"
   printf '  %s•%s %s %s\n' "$P" "$N" "$(t summary_version)" "$TAG_DISPLAY"
   printf '  %s•%s %s %s\n' "$P" "$N" "$(t summary_pkgs)" "${PKGS[*]}"
-  printf '  %s•%s %s ~/.zshrc · fastfetch · htop · yazi · ssh\n' "$P" "$N" "$(t summary_configs)"
+  printf '  %s•%s %s ~/.zshrc · fastfetch · htop · yazi · ssh · starship\n' "$P" "$N" "$(t summary_configs)"
+  printf '  %s•%s %s %s\n' "$P" "$N" "$(t summary_termux)" "$(t summary_termux_val)"
+  printf '  %s•%s %s %s · %s\n' "$P" "$N" "$(t summary_shell)" \
+    "$(t summary_shell_val)" "$ZSH_PLUGIN_DIR"
   [[ -n "$BACKUP_DIR" && -d "$BACKUP_DIR" ]] \
     && printf '  %s•%s %s %s\n' "$P" "$N" "$(t summary_backup)" "$BACKUP_DIR"
   printf '\n  %s➜ %s%s\n\n' "$BOLD" "$(t restart_hint)" "$N"
@@ -554,6 +686,14 @@ action_install() {
   local cur; cur=$(installed_version)
   if [[ "$cur" != "no instalada" ]]; then
     warn "$(tp already_installed "$cur")"
+    # Permite reaplicar la config (útil si algo quedó a medias o se borró)
+    local ans=""
+    if ask ans "  $(t reinstall_prompt)"; then
+      case "$ans" in
+        s|S|y|Y) do_download_and_apply ;;
+        *) info "$(t uninstall_aborted)" ;;
+      esac
+    fi
     return 0
   fi
   do_download_and_apply

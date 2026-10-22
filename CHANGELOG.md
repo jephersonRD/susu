@@ -5,6 +5,36 @@ Todos los cambios notables de este proyecto se documentan en este archivo.
 El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/),
 y este proyecto adhiere a [Semantic Versioning](https://semver.org/lang/es/).
 
+## [Unreleased]
+
+## [0.0.3] - 2026-10-22
+
+### Corregido
+- **El instalador no aplicaba la configuración**: copiaba los archivos pero nunca
+  configuraba `~/.termux`, así que el terminal seguía viéndose igual. Ahora copia
+  `termux.properties` (teclas extra, cursor), `colors.properties` (tema oscuro
+  morado/azul) y `font.ttf` (JetBrainsMono Nerd Font), y ejecuta
+  `termux-reload-settings` para aplicarlo al instante.
+- **zsh nunca quedaba como shell por defecto**: Termux seguía abriendo bash y por eso
+  `~/.zshrc` no se leía. Ahora se ejecuta `chsh -s zsh` (con respaldo en
+  `~/.termux/shell`).
+- **Faltaba el prompt**: se añade `~/.config/starship.toml` y el paquete `starship`.
+- **Faltaban los plugins de zsh**: se clonan automáticamente
+  `zsh-autosuggestions`, `zsh-syntax-highlighting` y `zsh-completions` en
+  `~/.local/share/zsh/plugins` (antes el `.zshrc` los buscaba y no existían).
+- **Faltaban paquetes que usa el `.zshrc`**: se añaden `eza`, `bat`, `fzf`, `zoxide`
+  y `git` a la instalación.
+- Los saludos de bienvenida usan `$USER` en vez de un nombre fijo.
+- `uninstall.sh`: elimina también `~/.termux`, `starship.toml` y los plugins, y
+  **restaura tus configs anteriores** desde el backup de la instalación. Ahora solo
+  desinstala los paquetes que susu tuvo que instalar (registro en
+  `~/.config/susu/installed_pkgs`).
+- El menú Instalar permite **reaplicar** la configuración si ya estaba instalada.
+
+### Añadido
+- `config/termux/` y `config/starship/` al repositorio.
+- El backup previo incluye ahora `~/.termux/*` y `~/.config/starship.toml`.
+
 ## [0.0.2] - 2026-10-12
 
 ### Añadido
@@ -44,5 +74,6 @@ y este proyecto adhiere a [Semantic Versioning](https://semver.org/lang/es/).
 - Workflow de GitHub Actions para publicar releases con `.tar.gz` al crear tags.
 - Licencia MIT, README profesional y carpeta `assets/` para imágenes y vídeos.
 
+[0.0.3]: https://github.com/jephersonRD/susu/releases/tag/v0.0.3
 [0.0.2]: https://github.com/jephersonRD/susu/releases/tag/v0.0.2
 [0.0.1]: https://github.com/jephersonRD/susu/releases/tag/v0.0.1

@@ -26,7 +26,7 @@ Al ejecutarlo verás el banner y el menú:
 
 ```
 ╭─ susu ─────────────────────────────────╮
-│  Instalada: v0.0.1   Disponible: v0.0.2
+│  Instalada: v0.0.2   Disponible: v0.0.3
 ╰────────────────────────────────────────╯
   1) Instalar
   2) Actualizar
@@ -41,10 +41,11 @@ Al ejecutarlo verás el banner y el menú:
 curl -fsSL https://raw.githubusercontent.com/jephersonRD/susu/main/install.sh | bash
 ```
 
-- **1 · Instalar** — instala paquetes que falten, hace backup y copia las configs.
+- **1 · Instalar** — instala los paquetes que falten, hace backup, copia las configs,
+  aplica `~/.termux` (colores, fuente y teclas) y deja **zsh** como shell por defecto.
 - **2 · Actualizar** — compara versiones con SemVer real y solo descarga si hay una nueva.
 - **3 · Borrar** — confirmación escribiendo `si`/`yes`, backup opcional y reseteo total
-  (nunca toca tus claves SSH privadas).
+  (restaura tus configs previas y nunca toca tus claves SSH privadas).
 - La primera vez pregunta el idioma y lo guarda en `~/.config/susu/lang`.
   Cámbialo cuando quieras: `bash install.sh --lang en` (o `es`).
 
@@ -61,7 +62,9 @@ curl -fsSL https://raw.githubusercontent.com/jephersonRD/susu/main/install.sh | 
   ▶️ [Ver vídeo demo](assets/demo.mp4)
 </div>
 
-Al terminar, **cierra y vuelve a abrir Termux**.
+Al terminar, **cierra y vuelve a abrir Termux** (o abre una pestaña nueva) para entrar
+en zsh. Los colores, la fuente y las teclas extra se aplican al instante con
+`termux-reload-settings`.
 
 ## 🔄 Actualizar
 
@@ -76,6 +79,12 @@ Vuelve a ejecutar el mismo comando. El instalador:
 | Paquete     | Uso                                        |
 | ----------- | ------------------------------------------ |
 | `zsh`       | Shell principal                            |
+| `starship`  | Prompt pastel (lee `starship.toml`)        |
+| `eza`       | `ls` moderno con iconos                    |
+| `bat`       | `cat` con resaltado de sintaxis            |
+| `fzf`       | Búsqueda difusa (historial y archivos)     |
+| `zoxide`    | `cd` inteligente (`z <dir>`)               |
+| `git`       | Clonar los plugins de zsh                  |
 | `htop`      | Monitor de procesos                        |
 | `yazi`      | Gestor de archivos TUI                     |
 | `fastfetch` | Información del sistema con arte ASCII     |
@@ -86,10 +95,22 @@ Y estas configuraciones se copian a tu `$HOME`:
 | Archivo del repo             | Destino                     |
 | ---------------------------- | --------------------------- |
 | `config/zsh/.zshrc`          | `~/.zshrc`                  |
+| `config/starship/starship.toml` | `~/.config/starship.toml`|
 | `config/fastfetch/*`         | `~/.config/fastfetch/`      |
 | `config/htop/htoprc`         | `~/.config/htop/htoprc`     |
 | `config/yazi/yazi.toml`      | `~/.config/yazi/yazi.toml`  |
 | `config/ssh/config`          | `~/.ssh/config` (modo 600)  |
+| `config/termux/termux.properties` | `~/.termux/termux.properties` |
+| `config/termux/colors.properties` | `~/.termux/colors.properties` |
+| `config/termux/font.ttf`     | `~/.termux/font.ttf`        |
+
+Además:
+
+- Deja **zsh** como shell por defecto (`chsh -s zsh` → `~/.termux/shell`).
+- Clona los plugins en `~/.local/share/zsh/plugins`:
+  `zsh-autosuggestions`, `zsh-syntax-highlighting` y `zsh-completions`.
+- `font.ttf` es **JetBrainsMono Nerd Font** (licencia OFL 2.0), necesaria para los
+  iconos de `eza` y del prompt.
 
 
 ## 🤝 Contribuciones
