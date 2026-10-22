@@ -82,6 +82,17 @@ Requisitos de la edición Full:
 - Al terminar, ejecuta `opencode` en la terminal y configura tu proveedor de IA
   (login o API key) la primera vez.
 
+### 💻 opencode en Termux
+
+<img src="assets/screenshots/opencode.png" alt="opencode respondiendo en Termux" width="360"/>
+
+Así se ve la edición **Full**: escribes `opencode`, le preguntas y responde con el
+modelo gratuito `DeepSeek V4.1 Flash Free`, todo dentro de Termux.
+
+https://github.com/user-attachments/assets/84787d13-aef2-4233-bf31-ada74dea9064
+
+<sub>¿No carga el reproductor? [Abre el vídeo en el repo](assets/opencode-demo.mp4).</sub>
+
 ## 📸 Vista previa
 
 <div align="center">
